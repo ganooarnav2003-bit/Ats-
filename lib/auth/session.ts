@@ -1,3 +1,4 @@
+import "server-only";
 import { cookies } from "next/headers";
 import { DEMO_COOKIE, isClerkConfigured, isDemoAuth } from "@/lib/auth/config";
 import { getRepository } from "@/lib/data";

@@ -1,3 +1,4 @@
+import "server-only";
 import { hasSupabase } from "@/lib/auth/config";
 import { DemoRepository } from "@/lib/data/demo-repo";
 import type { PmsRepository } from "@/lib/data/repository";

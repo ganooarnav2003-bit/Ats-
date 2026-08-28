@@ -1,4 +1,4 @@
-import { DEMO_PERSONAS } from "@/lib/data/demo-store";
+import { DEMO_PERSONAS } from "@/lib/data/personas";
 import { isDemoAuth } from "@/lib/auth/config";
 import { redirect } from "next/navigation";
 import { getCurrentEmployee } from "@/lib/auth/session";

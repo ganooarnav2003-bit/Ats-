@@ -1,13 +1,12 @@
-import { promises as fs } from "fs";
-import path from "path";
+import "server-only";
 import { randomUUID } from "crypto";
+import { DEMO_IDS } from "@/lib/data/personas";
 import type {
   Employee,
   Goal,
   GoalRating,
   Review,
   ReviewCycle,
-  Role,
 } from "@/lib/types";
 
 export type DemoStore = {
@@ -18,19 +17,10 @@ export type DemoStore = {
   goal_ratings: GoalRating[];
 };
 
-const STORE_PATH = path.join(process.cwd(), ".data", "demo-store.json");
-
 const now = "2026-03-15T09:00:00.000Z";
 
 const ids = {
-  priya: "11111111-1111-1111-1111-111111111111",
-  rajesh: "22222222-2222-2222-2222-222222222222",
-  kavita: "33333333-3333-3333-3333-333333333333",
-  ananya: "44444444-4444-4444-4444-444444444444",
-  vikram: "55555555-5555-5555-5555-555555555555",
-  meera: "66666666-6666-6666-6666-666666666666",
-  cycleOpen: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
-  cycleClosed: "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+  ...DEMO_IDS,
   g1: "c1111111-1111-1111-1111-111111111111",
   g2: "c2222222-2222-2222-2222-222222222222",
   g3: "c3333333-3333-3333-3333-333333333333",
@@ -271,6 +261,16 @@ export function seedStore(): DemoStore {
   return { employees, review_cycles, goals, reviews, goal_ratings };
 }
 
+type GlobalStore = typeof globalThis & { __apexPmsStore?: DemoStore };
+
+function memoryStore(): DemoStore {
+  const g = globalThis as GlobalStore;
+  if (!g.__apexPmsStore) {
+    g.__apexPmsStore = seedStore();
+  }
+  return g.__apexPmsStore;
+}
+
 let queue: Promise<unknown> = Promise.resolve();
 
 function enqueue<T>(fn: () => Promise<T>): Promise<T> {
@@ -282,37 +282,12 @@ function enqueue<T>(fn: () => Promise<T>): Promise<T> {
   return run;
 }
 
-async function readStore(): Promise<DemoStore> {
-  try {
-    const raw = await fs.readFile(STORE_PATH, "utf8");
-    return JSON.parse(raw) as DemoStore;
-  } catch {
-    const seeded = seedStore();
-    await fs.mkdir(path.dirname(STORE_PATH), { recursive: true });
-    await fs.writeFile(STORE_PATH, JSON.stringify(seeded, null, 2));
-    return seeded;
-  }
-}
-
-async function writeStore(store: DemoStore) {
-  await fs.mkdir(path.dirname(STORE_PATH), { recursive: true });
-  await fs.writeFile(STORE_PATH, JSON.stringify(store, null, 2));
-}
-
 export function withStore<T>(fn: (store: DemoStore) => Promise<T> | T) {
-  return enqueue(async () => {
-    const store = await readStore();
-    const result = await fn(store);
-    await writeStore(store);
-    return result;
-  });
+  return enqueue(async () => fn(memoryStore()));
 }
 
 export function readOnlyStore<T>(fn: (store: DemoStore) => Promise<T> | T) {
-  return enqueue(async () => {
-    const store = await readStore();
-    return fn(store);
-  });
+  return enqueue(async () => fn(memoryStore()));
 }
 
 export function nextId() {
@@ -323,11 +298,3 @@ export function isoNow() {
   return new Date().toISOString();
 }
 
-export const DEMO_PERSONAS: { id: string; label: string; role: Role }[] = [
-  { id: ids.priya, label: "Priya Sharma — HR Admin", role: "hr_admin" },
-  { id: ids.rajesh, label: "Rajesh Kumar — Manager (Delivery)", role: "manager" },
-  { id: ids.kavita, label: "Kavita Nair — Manager (Analytics)", role: "manager" },
-  { id: ids.ananya, label: "Ananya Iyer — Employee (goals submitted)", role: "employee" },
-  { id: ids.vikram, label: "Vikram Shah — Employee (goals sent back)", role: "employee" },
-  { id: ids.meera, label: "Meera Joshi — Employee (self-appraisal done)", role: "employee" },
-];
