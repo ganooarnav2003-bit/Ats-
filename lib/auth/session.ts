@@ -1,4 +1,5 @@
 import "server-only";
+import { unstable_noStore as noStore } from "next/cache";
 import { cookies } from "next/headers";
 import { DEMO_COOKIE, isClerkConfigured, isDemoAuth } from "@/lib/auth/config";
 import { getRepository } from "@/lib/data";
@@ -32,6 +33,7 @@ async function fromClerk(): Promise<Employee | null> {
 }
 
 export async function getCurrentEmployee(): Promise<SessionUser | null> {
+  noStore();
   const employee = isDemoAuth() ? await fromDemoCookie() : await fromClerk();
   if (!employee || !employee.is_active) return null;
   const repo = getRepository();
