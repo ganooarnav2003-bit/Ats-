@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATS – Applicant Tracking</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>ATS</h1>
+  <nav>
+    <button data-view="board" class="active">Pipeline</button>
+    <button data-view="candidates">Candidates</button>
+    <button data-view="jobs">Jobs</button>
+  </nav>
+  <div class="actions">
+    <input id="search" type="search" placeholder="Search candidates…">
+    <select id="jobFilter"><option value="">All jobs</option></select>
+    <button id="addCandidate" class="primary">+ Candidate</button>
+  </div>
+</header>
+
+<main>
+  <section id="view-board"></section>
+  <section id="view-candidates" hidden></section>
+  <section id="view-jobs" hidden></section>
+</main>
+
+<dialog id="candidateDialog">
+  <form method="dialog" id="candidateForm">
+    <h2 id="candidateTitle">Candidate</h2>
+    <label>Name <input name="name" required></label>
+    <label>Email <input name="email" type="email"></label>
+    <label>Phone <input name="phone"></label>
+    <label>Job <select name="jobId"></select></label>
+    <label>Stage <select name="stage"></select></label>
+    <label>Skills (comma separated) <input name="skills"></label>
+    <label>Rating
+      <select name="rating"><option value="0">–</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+    </label>
+    <label>Notes <textarea name="notes" rows="4"></textarea></label>
+    <div class="row">
+      <button type="button" id="deleteCandidate" class="danger">Delete</button>
+      <span class="spacer"></span>
+      <button type="button" id="cancelCandidate">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="jobDialog">
+  <form method="dialog" id="jobForm">
+    <h2>Job</h2>
+    <label>Title <input name="title" required></label>
+    <label>Department <input name="dept"></label>
+    <label>Required skills (comma separated) <input name="skills"></label>
+    <label>Status
+      <select name="status"><option>Open</option><option>Closed</option></select>
+    </label>
+    <div class="row">
+      <span class="spacer"></span>
+      <button type="button" id="cancelJob">Cancel</button>
+      <button type="submit" class="primary">Save</button>
+    </div>
+  </form>
+</dialog>
+<script src="app.js"></script>
+</body>
+</html>
