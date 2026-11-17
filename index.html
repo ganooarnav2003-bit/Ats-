@@ -10,7 +10,8 @@
 <header>
   <h1>ATS</h1>
   <nav>
-    <button data-view="board" class="active">Pipeline</button>
+    <button data-view="dashboard" class="active">Dashboard</button>
+    <button data-view="board">Pipeline</button>
     <button data-view="candidates">Candidates</button>
     <button data-view="jobs">Jobs</button>
   </nav>
@@ -22,7 +23,8 @@
 </header>
 
 <main>
-  <section id="view-board"></section>
+  <section id="view-dashboard"></section>
+  <section id="view-board" hidden></section>
   <section id="view-candidates" hidden></section>
   <section id="view-jobs" hidden></section>
 </main>

@@ -6,7 +6,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const list = s => s.split(',').map(x => x.trim()).filter(Boolean);
 
 let state = load();
-let view = 'board';
+let view = 'dashboard';
 
 function load() {
   try { const d = JSON.parse(localStorage.getItem(KEY)); if (d) return d; } catch {}
@@ -52,14 +52,37 @@ function cardHtml(c) {
 }
 
 function render() {
-  for (const v of ['board','candidates','jobs']) $('#view-' + v).hidden = v !== view;
+  for (const v of ['dashboard','board','candidates','jobs']) $('#view-' + v).hidden = v !== view;
   document.querySelectorAll('nav button').forEach(b => b.classList.toggle('active', b.dataset.view === view));
   const jf = $('#jobFilter'), cur = jf.value;
   jf.innerHTML = '<option value="">All jobs</option>' + state.jobs.map(j => `<option value="${j.id}">${esc(j.title)}</option>`).join('');
   jf.value = cur;
   const cs = filtered();
 
-  if (view === 'board') {
+  if (view === 'dashboard') {
+    const total = cs.length, hired = cs.filter(c => c.stage === 'Hired').length;
+    const active = cs.filter(c => !['Hired','Rejected'].includes(c.stage)).length;
+    const ms = cs.map(match).filter(m => m !== null);
+    const avg = ms.length ? Math.round(ms.reduce((a, b) => a + b, 0) / ms.length) : 0;
+    const rate = total ? Math.round(100 * hired / total) : 0;
+    const counts = STAGES.map(s => cs.filter(c => c.stage === s).length);
+    const max = Math.max(1, ...counts);
+    const perJob = state.jobs.map(j => [j, cs.filter(c => c.jobId === j.id).length]);
+    const jmax = Math.max(1, ...perJob.map(x => x[1]));
+    const top = [...cs].sort((a, b) => (match(b) ?? -1) - (match(a) ?? -1)).slice(0, 5);
+    $('#view-dashboard').innerHTML = `<div class="stats">
+      <div class="stat"><b>${total}</b>Total candidates</div>
+      <div class="stat"><b>${active}</b>Active in pipeline</div>
+      <div class="stat"><b>${state.jobs.filter(j => j.status === 'Open').length}</b>Open jobs</div>
+      <div class="stat"><b>${hired}</b>Hired</div>
+      <div class="stat"><b>${rate}%</b>Hire rate</div>
+      <div class="stat"><b>${avg}%</b>Avg skill match</div></div>
+      <div class="grid2">
+        <div class="panel"><h3>Hiring funnel</h3>${STAGES.map((s, i) => `<div class="bar"><span>${s}</span><div class="track"><i style="width:${100 * counts[i] / max}%"></i></div><em>${counts[i]}</em></div>`).join('')}</div>
+        <div class="panel"><h3>Candidates per job</h3>${perJob.map(([j, n]) => `<div class="bar"><span>${esc(j.title)}</span><div class="track"><i style="width:${100 * n / jmax}%"></i></div><em>${n}</em></div>`).join('') || '<p class="muted">No jobs yet.</p>'}</div>
+        <div class="panel"><h3>Top matches</h3>${top.map(c => `<div class="bar" data-id="${c.id}" style="cursor:pointer"><span>${esc(c.name)}</span><div class="track"><i style="width:${match(c) ?? 0}%"></i></div><em>${match(c) ?? '–'}%</em></div>`).join('') || '<p class="muted">No candidates yet.</p>'}</div>
+      </div>`;
+  } else if (view === 'board') {
     $('#view-board').innerHTML = `<div class="stats">
       <div class="stat"><b>${cs.length}</b>Candidates</div>
       <div class="stat"><b>${state.jobs.filter(j => j.status === 'Open').length}</b>Open jobs</div>
